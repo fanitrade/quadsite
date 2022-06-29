@@ -1,0 +1,99 @@
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+<html>
+    <body>
+        <div class="container">
+            <div class="grid">
+              <canvas id="board" width="1000000" height="1000000"></canvas>
+            </div>
+          </div>
+    </body>
+</html>
+
+<style>
+.container {
+  height: 10000px;
+  width: 10000px;
+  overflow: scroll;
+}
+
+.grid {
+  box-sizing: border-box;
+  margin: 0;
+  height: 100%;
+  width: 100%;
+  background-image: repeating-linear-gradient(0deg, transparent, transparent 9px, #ccc 9px, #ccc 10px), repeating-linear-gradient(-90deg, transparent, transparent 9px, #ccc 9px, #ccc 10px);
+}
+body{
+    background:#162b44
+
+}
+</style>
+<script>
+    const canvas = document.getElementById('board');
+const context = canvas.getContext('2d');
+
+let anchor = null;
+let pos = null;
+let lastPos = null;
+
+// return x,y in grid coords from an event
+function position(event) {
+  const rect = canvas.getBoundingClientRect();
+  return [
+    Math.floor((event.clientX-rect.left)/10),
+    Math.floor((event.clientY-rect.top)/10)
+  ];
+}
+
+// color the rectangle with corners at posA, posB
+function colorRegion(posA, posB, color) {
+  const minX = Math.min(posA[0], posB[0]);
+  const minY = Math.min(posA[1], posB[1]);
+  const maxX = Math.max(posA[0], posB[0]);
+  const maxY = Math.max(posA[1], posB[1]);
+  
+  context.fillStyle = color
+  for (let i=minX; i<maxX; i++) {
+    const tenI = i*10+1
+    for (let j=minY; j<maxY; j++) {
+      context.fillRect(tenI,10*j+1,9,9);
+    }
+  }
+}
+
+
+// mouse down, set the anchor
+canvas.addEventListener('mousedown', function(evt) {
+  anchor = position(evt);
+  lastPos = position(evt);
+})
+
+// mouse up, clear the anchor
+canvas.addEventListener('mouseup', function(evt) {
+  anchor = null;
+})
+
+// mouse move, color the old rect white, color new rect green
+// remember the last pos
+function onmove() {
+  if (!anchor) return;
+  colorRegion(anchor, lastPos, '#162b44')
+  colorRegion(anchor, pos, '#fff')
+  lastPos = pos;
+}
+
+// no need to run this on every pixel
+// you could also measure absolute mouse move > 10x10 as a throttle
+const throttledOnMove = _.throttle(onmove, 100);
+canvas.addEventListener('mousemove', function(evt) {
+  pos = position(evt);
+  throttledOnMove()
+})
+
+    </script>
+
+
+
+
+
